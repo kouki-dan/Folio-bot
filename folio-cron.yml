@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: folio-bot
 spec:
-  schedule: "0 9,18 * * 1-5"
+  schedule: "0 0,9 * * 1-5" # for UTC
   jobTemplate:
     spec:
       template:
