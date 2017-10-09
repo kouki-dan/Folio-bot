@@ -1,0 +1,32 @@
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  name: folio-bot
+spec:
+  schedule: "0 9,18 * * 1-5"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: folio-bot
+            image: index.docker.io/koukidan/folio-bot
+            args: ["python", "folio.py"]
+            env:
+              - name: USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: folio-bot-credentials
+                    key: username
+              - name: PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: folio-bot-credentials
+                    key: password
+              - name: WEBHOOK_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: folio-bot-credentials
+                    key: webhook-url
+          restartPolicy: Never
+
