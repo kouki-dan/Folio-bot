@@ -1,0 +1,10 @@
+
+version: '3'
+
+services:
+
+  folio:
+    build: ./
+    env_file:
+      - env
+
