@@ -9,4 +9,5 @@ services:
       dockerfile: CronDockerfile
     env_file:
       - env
+    restart: always
 
