@@ -1,0 +1,28 @@
+FROM python:3.6.1
+MAINTAINER Kouki Saito <dan.addr.skd@gmail.com>
+
+# Thanks for https://github.com/renskiy/cron-docker-image
+RUN set -ex \
+    && apt-get clean && apt-get update \
+# install cron
+    && apt-get install -y cron \
+    && rm -rf /var/lib/apt/lists/* \
+# making logging pipe
+    && mkfifo --mode 0666 /var/log/cron.log \
+# make pam_loginuid.so optional for cron
+# see https://github.com/docker/docker/issues/5663#issuecomment-42550548
+    && sed --regexp-extended --in-place \
+    's/^session\s+required\s+pam_loginuid.so$/session optional pam_loginuid.so/' \
+    /etc/pam.d/cron
+
+WORKDIR /app
+COPY start-cron /usr/sbin
+RUN chmod 755 /usr/sbin/start-cron
+COPY ./setup.py setup.py
+RUN python setup.py develop
+COPY ./folio.py /app
+
+RUN echo '0 9,18 * * * root . /app/project_env.sh; python /app/folio.py ' >> /etc/crontab
+
+CMD ["start-cron"]
+

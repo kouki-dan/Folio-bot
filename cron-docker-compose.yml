@@ -1,0 +1,12 @@
+
+version: '3'
+
+services:
+
+  folio:
+    build:
+      context: ./
+      dockerfile: CronDockerfile
+    env_file:
+      - env
+

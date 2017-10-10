@@ -28,3 +28,8 @@ kubectl create -f folio-cron.yml
 
 That's all. You will show your data on slack if configuration succeeded.
 
+
+## Deploy to docker-compose(beta)
+1. Copy env file from `env.sample` to `env` and replace them for development info
+2. ```docker-compose -f cron-docker-compose.yml up --build -d```
+
