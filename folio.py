@@ -46,7 +46,7 @@ def fetch_folio_shisan(mail, password):
         "comp_yesterday": comp_yesterday,
     }
 
-def post_shisan_to_slack(shisan, webhook_url):
+def post_shisan_to_slack(shisan, webhook_url, title):
     all_shisan = shisan["all_shisan"]
     fukumi_soneki_percent = shisan["fukumi_soneki_percent"]
     fukumi_soneki = shisan["fukumi_soneki"]
@@ -59,7 +59,7 @@ def post_shisan_to_slack(shisan, webhook_url):
             {{
                 "fallback": "FOLIOの情報です",
                 "color": "#36a64f",
-                "title": "今日のFOLIO",
+                "title": "{title}",
                 "title_link": "https://folio-sec.com/mypage/assets",
                 "fields": [
                     {{
@@ -94,7 +94,8 @@ if __name__ == "__main__":
     mail = os.environ["USERNAME"]
     password = os.environ["PASSWORD"]
     webhook_url = os.environ["WEBHOOK_URL"]
+    title = os.environ.get("TITLE", "今日のフォリオ")
 
     shisan = fetch_folio_shisan(mail, password)
-    post_shisan_to_slack(shisan, webhook_url)
+    post_shisan_to_slack(shisan, webhook_url, title)
 

@@ -4,7 +4,7 @@ FOLIO bot
 ## How to use
 Please try it with this command.
 ```
-docker run -e USERNAME="<Your mail address>" -e PASSWORD="<Your password>" -e WEBHOOK_URL="<Your slack incoming-webhook URL>" koukidan/folio-bot
+docker run -e USERNAME="<Your mail address>" -e PASSWORD="<Your password>" -e WEBHOOK_URL="<Your slack incoming-webhook URL>" [-e TITLE="今日のFOLIO"] koukidan/folio-bot
 ```
 
 After login successful, you will see like this image:   
