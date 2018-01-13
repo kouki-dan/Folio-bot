@@ -17,7 +17,7 @@ def fetch_folio_shisan(mail, password):
 
     login_url = "https://folio-sec.com/login"
     login_page = browser.open(login_url)
-    csrf_token_dict_str = login_page.soup.select("#initial-data")[0].text
+    csrf_token_dict_str = login_page.soup.select("#initial-data")[0]["data-json"]
     token_dict = json.loads(html.unescape(csrf_token_dict_str))
     csrf_token = token_dict["csrf"]
 
