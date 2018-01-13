@@ -46,6 +46,32 @@ def fetch_folio_shisan(mail, password):
         "comp_yesterday": comp_yesterday,
     }
 
+def post_error_to_slack(webhook_url, title):
+    payload = f"""
+    {{
+        "attachments": [
+            {{
+                "fallback": "FOLIOの情報です(ERROR)",
+                "color": "#ef1c3b",
+                "title": "{title}(ERROR)",
+                "title_link": "https://folio-sec.com/mypage/assets",
+                "fields": [
+                    {{
+                        "title": "情報の取得に失敗しました",
+                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください",
+                        "short": false
+                    }}
+                ],
+                "thumb_url": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
+                "footer": "Folio Bot",
+                "footer_icon": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
+                "ts": {int(time.time())}
+            }}
+        ]
+    }}
+    """
+    requests.post(webhook_url, data={"payload": payload})
+
 def post_shisan_to_slack(shisan, webhook_url, title):
     all_shisan = shisan["all_shisan"]
     fukumi_soneki_percent = shisan["fukumi_soneki_percent"]
@@ -96,6 +122,10 @@ if __name__ == "__main__":
     webhook_url = os.environ["WEBHOOK_URL"]
     title = os.environ.get("TITLE", "今日のフォリオ")
 
-    shisan = fetch_folio_shisan(mail, password)
+    try:
+        shisan = fetch_folio_shisan(mail, password)
+    except:
+        post_error_to_slack(webhook_url, title)
+        exit(0)
     post_shisan_to_slack(shisan, webhook_url, title)
 
