@@ -3,6 +3,7 @@ import html
 import json
 import time
 import os
+import re
 
 import mechanicalsoup
 import requests
@@ -38,8 +39,19 @@ def fetch_folio_shisan(mail, password):
     fukumi_soneki = shisan_page.soup.select(".assets__num")[1].text
     comp_yesterday_percent = shisan_page.soup.select(".assets__percentage")[1].text[1:-1]
     comp_yesterday = shisan_page.soup.select(".assets__num")[2].text
+
+    all_theme_names = shisan_page.soup.select(".assetsCard__name")
+    all_theme_array = []
+    for i, name in enumerate(all_theme_names):
+      all_theme_array.append(
+        name.text + ': ' + shisan_page.soup.select(".assetsCard__amount")[i].text +
+       '（' + shisan_page.soup.select(".assetsCard__profit")[i].text + '）'
+     )
+    all_theme = "\n".join(all_theme_array)
+
     return {
         "all_shisan": all_shisan,
+        "all_theme": all_theme,
         "fukumi_soneki_percent": fukumi_soneki_percent,
         "fukumi_soneki": fukumi_soneki,
         "comp_yesterday_percent": comp_yesterday_percent,
@@ -74,6 +86,7 @@ def post_error_to_slack(webhook_url, title):
 
 def post_shisan_to_slack(shisan, webhook_url, title):
     all_shisan = shisan["all_shisan"]
+    all_theme = shisan["all_theme"]
     fukumi_soneki_percent = shisan["fukumi_soneki_percent"]
     fukumi_soneki = shisan["fukumi_soneki"]
     comp_yesterday_percent = shisan["comp_yesterday_percent"]
@@ -84,7 +97,7 @@ def post_shisan_to_slack(shisan, webhook_url, title):
         "attachments": [
             {{
                 "fallback": "FOLIOの情報です",
-                "color": "#36a64f",
+                "color": "#189ac5",
                 "title": "{title}",
                 "title_link": "https://folio-sec.com/mypage/assets",
                 "fields": [
@@ -102,6 +115,11 @@ def post_shisan_to_slack(shisan, webhook_url, title):
                         "title": "前日比 (%)",
                         "value": "{comp_yesterday} ({comp_yesterday_percent})",
                         "short": true
+                    }},
+                    {{
+                        "title": "内訳",
+                        "value": "{all_theme}",
+                        "short": false
                     }}
                 ],
                 "thumb_url": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
