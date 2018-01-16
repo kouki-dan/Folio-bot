@@ -4,12 +4,13 @@ import json
 import time
 import os
 import re
+import sys
+import traceback
 
 import mechanicalsoup
 import requests
 
-
-def fetch_folio_shisan(mail, password):
+def login(mail, password):
     browser = mechanicalsoup.StatefulBrowser(
         soup_config={'features': 'html.parser'},
         raise_on_404=True,
@@ -30,7 +31,27 @@ def fetch_folio_shisan(mail, password):
     login_response = browser.post(login_url, data=payload, headers={
         "x-csrf-token": csrf_token,
     })
+    return browser
 
+def fetch_folio_theme_shisan(browser, theme_card_dom):
+    theme_link = theme_card_dom["href"]
+    theme_name = theme_card_dom.select(".assetsCard__name")[0].text
+    theme_url = "https://folio-sec.com" + theme_link
+    theme_page = browser.open(theme_url)
+
+    item_count = len(theme_page.soup.select(".portfolioList__item"))
+    amountDom = theme_page.soup.select(".portfolioList__amount")
+    profitDom = theme_page.soup.select(".portfolioList__profit")
+
+    theme_array = []
+    for i in range(0, item_count):
+        amount = amountDom[i].text
+        profit = profitDom[i].text
+        theme_array.append(f"{theme_name.ljust(15, '　')} {amount}    {profit}")
+
+    return theme_array
+
+def fetch_folio_shisan(browser):
     shisan_url = "https://folio-sec.com/mypage/assets"
     shisan_page = browser.open(shisan_url)
 
@@ -40,12 +61,11 @@ def fetch_folio_shisan(mail, password):
     comp_yesterday_percent = shisan_page.soup.select(".assets__percentage")[1].text[1:-1]
     comp_yesterday = shisan_page.soup.select(".assets__num")[2].text
 
-    all_theme_names = shisan_page.soup.select(".assetsCard__name")
+    all_theme_card_doms = shisan_page.soup.select(".assetsCard__card")
     all_theme_array = []
-    for i, name in enumerate(all_theme_names):
+    for i, theme_card_dom in enumerate(all_theme_card_doms):
       all_theme_array.append(
-        name.text + ': ' + shisan_page.soup.select(".assetsCard__amount")[i].text +
-       '（' + shisan_page.soup.select(".assetsCard__profit")[i].text + '）'
+        "\n".join(fetch_folio_theme_shisan(browser, theme_card_dom))
      )
     all_theme = "\n".join(all_theme_array)
 
@@ -59,6 +79,8 @@ def fetch_folio_shisan(mail, password):
     }
 
 def post_error_to_slack(webhook_url, title):
+    exc = sys.exc_info()
+    exc_string = "\n".join(traceback.format_exception(exc[0], exc[1], exc[2])).encode("unicode_escape").decode("utf-8").replace('"', r'\"')
     payload = f"""
     {{
         "attachments": [
@@ -70,7 +92,7 @@ def post_error_to_slack(webhook_url, title):
                 "fields": [
                     {{
                         "title": "情報の取得に失敗しました",
-                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください",
+                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください。{exc_string}",
                         "short": false
                     }}
                 ],
@@ -141,9 +163,11 @@ if __name__ == "__main__":
     title = os.environ.get("TITLE", "今日のフォリオ")
 
     try:
-        shisan = fetch_folio_shisan(mail, password)
+        browser = login(mail, password)
+        shisan = fetch_folio_shisan(browser)
     except:
         post_error_to_slack(webhook_url, title)
-        exit(0)
+        exit(1)
     post_shisan_to_slack(shisan, webhook_url, title)
+    exit(0)
 
