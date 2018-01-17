@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import traceback
+import time
 
 import mechanicalsoup
 import requests
@@ -39,17 +40,17 @@ def fetch_folio_theme_shisan(browser, theme_card_dom):
     theme_url = "https://folio-sec.com" + theme_link
     theme_page = browser.open(theme_url)
 
-    item_count = len(theme_page.soup.select(".portfolioList__item"))
-    amountDom = theme_page.soup.select(".portfolioList__amount")
-    profitDom = theme_page.soup.select(".portfolioList__profit")
+    assets_num_doms = theme_page.soup.select(".assets__num")
+    amount = assets_num_doms[0].text
+    gain_yen = assets_num_doms[1].text
+    profit_yen = assets_num_doms[2].text
 
-    theme_array = []
-    for i in range(0, item_count):
-        amount = amountDom[i].text
-        profit = profitDom[i].text
-        theme_array.append(f"{theme_name.ljust(15, '　')} {amount}    {profit}")
+    percent_doms = theme_page.soup.select(".assets__percentage")
+    gain_percent = percent_doms[0].text
+    profit_percent = percent_doms[1].text
 
-    return theme_array
+    return f"<{theme_url}|{theme_name}>: {amount}\n  含み損益:{gain_yen}{gain_percent} 前日比:{profit_yen}{profit_percent}"
+
 
 def fetch_folio_shisan(browser):
     shisan_url = "https://folio-sec.com/mypage/assets"
@@ -65,8 +66,9 @@ def fetch_folio_shisan(browser):
     all_theme_array = []
     for i, theme_card_dom in enumerate(all_theme_card_doms):
       all_theme_array.append(
-        "\n".join(fetch_folio_theme_shisan(browser, theme_card_dom))
-     )
+        fetch_folio_theme_shisan(browser, theme_card_dom)
+      )
+      time.sleep(1)
     all_theme = "\n".join(all_theme_array)
 
     return {
@@ -144,7 +146,6 @@ def post_shisan_to_slack(shisan, webhook_url, title):
                         "short": false
                     }}
                 ],
-                "thumb_url": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
                 "footer": "Folio Bot",
                 "footer_icon": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
                 "ts": {int(time.time())}
