@@ -29,7 +29,8 @@ def login(mail, password):
         "password": password,
     }
 
-    login_response = browser.post(login_url, data=payload, headers={
+    login_api_url = "https://folio-sec.com/api/v1/login"
+    login_response = browser.post(login_api_url, data=payload, headers={
         "x-csrf-token": csrf_token,
     })
     return browser
