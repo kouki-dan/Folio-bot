@@ -14,17 +14,25 @@ import requests
 
 
 class Stock:
-    def __init__(self, meigara: str, kabu_suu: str, unyo_kingaku: str, zenjitsu_hi: str):
+    def __init__(self, meigara: str, kabu_suu: str, unyo_kingaku: str, zenjitsu_hi_percent: str):
         self.meigara = meigara  # 銘柄
         self.kabu_suu = kabu_suu  # 数量
         self.unyo_kingaku = unyo_kingaku  # 運用金額
-        self.zenjitsu_hi = zenjitsu_hi  # 前日比
+        self.zenjitsu_hi_percent = zenjitsu_hi_percent  # 前日比
 
     def __str__(self) -> str:
         return str(vars(self))
 
     def to_slack_msg(self) -> str:
-        return f"{self.meigara}: {self.unyo_kingaku}{self.zenjitsu_hi}"
+        return f"<http://google.co.jp/search?q={self.meigara}|{self.meigara}>: {self.unyo_kingaku} ({self.zenjitsu_hi_percent})"
+
+    @staticmethod
+    def big_n(stocks, num):
+        return sorted(stocks, key=lambda x: float(x.zenjitsu_hi_percent[:-1]), reverse=True)[0:num]
+
+    @staticmethod
+    def small_n(stocks, num):
+        return sorted(stocks, key=lambda x: float(x.zenjitsu_hi_percent[:-1]), reverse=False)[0:num]
 
 
 class Portfolio:
@@ -36,10 +44,10 @@ class Portfolio:
         return str(vars(self)) + ", ".join(map(str, self.stocks))
 
     def max_stock(self) -> Stock:
-        return max(self.stocks, key=lambda x: float(x.zenjitsu_hi[:-1]))
+        return max(self.stocks, key=lambda x: float(x.zenjitsu_hi_percent[:-1]))
 
     def min_stock(self) -> Stock:
-        return min(self.stocks, key=lambda x: float(x.zenjitsu_hi[:-1]))
+        return min(self.stocks, key=lambda x: float(x.zenjitsu_hi_percent[:-1]))
 
     @staticmethod
     def parse_portfolio_from_dom(portfolio_box_dom):
@@ -72,6 +80,15 @@ class Theme:
 
     def __str__(self) -> str:
         return str(vars(self)) + ", ".join(map(str, self.portfolios))
+
+    def allStocks(self) -> List[Stock]:
+        return [stock for portfolio in self.portfolios for stock in portfolio.stocks]
+
+    def eiyuRanking(self, num) -> List[Stock]:
+        return Stock.big_n(self.allStocks(), num)
+
+    def senpanRanking(self, num) -> List[Stock]:
+        return Stock.small_n(self.allStocks(), num)
 
     def to_slack_msg(self) -> str:
         return f"<{self.url}|{self.name}>: {self.oazukari_shisan}\n" \
@@ -117,6 +134,12 @@ class UserAllTheme:
 
     def __str__(self) -> str:
         return str(vars(self)) + ", ".join(map(str, self.themes))
+
+    def eiyuRankingForAllTheme(self, num) -> List[Stock]:
+        return Stock.big_n([stock for theme in self.themes for stock in theme.allStocks()], num)
+
+    def senpanRankingForAllTheme(self, num) -> List[Stock]:
+        return Stock.small_n([stock for theme in self.themes for stock in theme.allStocks()], num)
 
     @staticmethod
     def parse_all_theme_card_doms(shisan_page_dom):
@@ -207,6 +230,7 @@ def fetch_folio_shisan(browser):
     user_shisan = UserShisan.parse_user_shisan_page_dom(shisan_page.soup)
     all_theme = fetch_folio_all_theme(browser, shisan_page.soup)
 
+    rankingNum = 1
     return {
         "all_shisan": user_shisan.oazukari_shisan,
         "all_theme": "\n".join(map(lambda t: t.to_slack_msg(), all_theme.themes)),
@@ -214,6 +238,8 @@ def fetch_folio_shisan(browser):
         "fukumi_soneki": user_shisan.fukumi_soneki,
         "comp_yesterday_percent": user_shisan.zenjitsu_hi_percent,
         "comp_yesterday": user_shisan.zenjitsu_hi,
+        "today_eiyu": "\n".join([stock.to_slack_msg() for stock in all_theme.eiyuRankingForAllTheme(rankingNum)]),
+        "today_senpan": "\n".join([stock.to_slack_msg() for stock in all_theme.senpanRankingForAllTheme(rankingNum)])
     }
 
 
@@ -246,6 +272,7 @@ def post_error_to_slack(webhook_url, title):
     """
     requests.post(webhook_url, data={"payload": payload})
 
+
 def post_shisan_to_slack(shisan, webhook_url, title):
     all_shisan = shisan["all_shisan"]
     all_theme = shisan["all_theme"]
@@ -253,6 +280,8 @@ def post_shisan_to_slack(shisan, webhook_url, title):
     fukumi_soneki = shisan["fukumi_soneki"]
     comp_yesterday_percent = shisan["comp_yesterday_percent"]
     comp_yesterday = shisan["comp_yesterday"]
+    today_eiyu = shisan["today_eiyu"]
+    today_senpan= shisan["today_senpan"]
 
     payload = f"""
     {{
@@ -282,6 +311,16 @@ def post_shisan_to_slack(shisan, webhook_url, title):
                         "title": "内訳",
                         "value": "{all_theme}",
                         "short": false
+                    }},
+                    {{
+                        "title": "本日の英雄 :sunny:",
+                        "value": "{today_eiyu}",
+                        "short": true
+                    }},
+                    {{
+                        "title": "本日の戦犯 :umbrella_with_rain_drops:",
+                        "value": "{today_senpan}",
+                        "short": true
                     }}
                 ],
                 "footer": "Folio Bot",
