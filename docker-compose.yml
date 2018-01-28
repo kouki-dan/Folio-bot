@@ -7,4 +7,6 @@ services:
     build: ./
     env_file:
       - env
+    volumes:
+      - ./:/app
 
