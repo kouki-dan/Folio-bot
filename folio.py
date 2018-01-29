@@ -101,7 +101,7 @@ class Theme:
 
     @staticmethod
     def parse_theme_from_dom(theme_page_dom, url: str):
-        name = theme_page_dom.select(".box__titleMain")[0].text
+        name = theme_page_dom.select(".box__titleMain")[0].text.rstrip("の資産")
         assets_num_doms = theme_page_dom.select(".assets__num")
         oazukari_shisan = assets_num_doms[0].text
         fukumi_soneki = assets_num_doms[1].text
