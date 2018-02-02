@@ -7,7 +7,7 @@ import re
 import sys
 import traceback
 import time
-from typing import List
+from typing import List, Optional
 
 import mechanicalsoup
 import requests
@@ -24,7 +24,7 @@ class Stock:
         return str(vars(self))
 
     def to_slack_msg(self) -> str:
-        return f"<http://google.co.jp/search?q={self.meigara}|{self.meigara}>: {self.unyo_kingaku} ({self.zenjitsu_hi_percent})"
+        return f"<http://google.co.jp/search?q={self.meigara} ニュース|{self.meigara}>: {self.unyo_kingaku} ({self.zenjitsu_hi_percent})"
 
     @staticmethod
     def big_n(stocks, num):
@@ -101,6 +101,11 @@ class Theme:
 
     @staticmethod
     def parse_theme_from_dom(theme_page_dom, url: str):
+        titleDoms = theme_page_dom.select(".box__titleMain")
+        ## 購入中の場合emptyになる。
+        if len(titleDoms) == 0:
+            return None
+        name = titleDoms[0].text.rstrip("の資産")
         name = theme_page_dom.select(".box__titleMain")[0].text.rstrip("の資産")
         assets_num_doms = theme_page_dom.select(".assets__num")
         oazukari_shisan = assets_num_doms[0].text
@@ -144,17 +149,6 @@ class UserAllTheme:
     @staticmethod
     def parse_all_theme_card_doms(shisan_page_dom):
         return shisan_page_dom.select(".assetsCard__card")
-
-    @staticmethod
-    def parse_all_themes_from_dom(shisan_page_dom):
-        all_theme_card_doms = shisan_page_dom.select(".assetsCard__card")
-        all_theme_array = []
-        for i, theme_card_dom in enumerate(all_theme_card_doms):
-            all_theme_array.append(
-                fetch_folio_theme_shisan(browser, theme_card_dom)
-            )
-            time.sleep(1)
-        return UserAllTheme(all_theme_array)
 
 
 class UserShisan:
@@ -207,7 +201,7 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     return browser
 
 
-def fetch_folio_theme_shisan(browser, theme_card_dom) -> Theme:
+def fetch_folio_theme_shisan(browser, theme_card_dom) -> Optional[Theme]:
     theme_url = Theme.parse_theme_url_from_dom(theme_card_dom)
     theme_page = browser.open(theme_url)
     return Theme.parse_theme_from_dom(theme_page.soup, theme_url)
@@ -218,9 +212,9 @@ def fetch_folio_all_theme(browser, shisan_page_dom) -> UserAllTheme:
 
     all_theme_array = []
     for i, theme_card_dom in enumerate(all_theme_card_doms):
-        all_theme_array.append(
-            fetch_folio_theme_shisan(browser, theme_card_dom)
-        )
+        themeOrNull = fetch_folio_theme_shisan(browser, theme_card_dom)
+        if themeOrNull:
+            all_theme_array.append(themeOrNull)
         time.sleep(1)
     return UserAllTheme(all_theme_array)
 
