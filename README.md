@@ -8,7 +8,8 @@ docker run -e USERNAME="<Your mail address>" -e PASSWORD="<Your password>" -e WE
 ```
 
 After login successful, you will see like this image:   
-<img width="486" alt="screen shot 2017-10-11 at 1 06 05 am" src="https://user-images.githubusercontent.com/1401711/31397230-6f70784a-ae20-11e7-8a61-5d0284c19c3d.png">
+<img width="553" alt="screen shot 2018-03-03 at 11 43 54 pm" src="https://user-images.githubusercontent.com/1401711/36935689-1b5c807a-1f3e-11e8-96f3-eefb6bf3ea1b.png">
+
 
 ## How to develop
 1. Copy env file from `env.sample` to `env` and replace them for development info
