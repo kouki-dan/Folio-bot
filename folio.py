@@ -167,7 +167,7 @@ class UserShisan:
 
     @staticmethod
     def parse_user_shisan_page_dom(shisan_page_dom):
-        oazukari_shisan = shisan_page_dom.select(".mypageCover__assetsAmount")[0].text
+        oazukari_shisan = shisan_page_dom.select(".assets__num")[0].text
         fukumi_soneki = shisan_page_dom.select(".assets__num")[1].text
         zenjitsu_hi = shisan_page_dom.select(".assets__num")[2].text
         fukumi_soneki_percent = shisan_page_dom.select(".assets__percentage")[0].text[1:-1]
@@ -180,7 +180,7 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     browser = mechanicalsoup.StatefulBrowser(
         soup_config={'features': 'html.parser'},
         raise_on_404=True,
-        user_agent='FolioBot/0.1: github.com/kouki-dan/folio-bot',
+        user_agent='Mozilla/5.0 (compatible; Edge; Foliobot/0.1.9; +http://github.com/kouki-dan/folio-bot)',
     )
 
     login_url = "https://folio-sec.com/login"
