@@ -155,25 +155,27 @@ class UserShisan:
     shisan_url = "https://folio-sec.com/mypage/assets"
 
     def __init__(self, oazukari_shisan: str, fukumi_soneki: str, fukumi_soneki_percent: str, zenjitsu_hi: str,
-                 zenjitsu_hi_percent: str):
+              zenjitsu_hi_percent: str, subete_no_shisan: str):
         self.oazukari_shisan = oazukari_shisan
         self.fukumi_soneki = fukumi_soneki
         self.fukumi_soneki_percent = fukumi_soneki_percent
         self.zenjitsu_hi = zenjitsu_hi
         self.zenjitsu_hi_percent = zenjitsu_hi_percent
+        self.subete_no_shisan = subete_no_shisan
 
     def __str__(self) -> str:
         return str(vars(self))
 
     @staticmethod
     def parse_user_shisan_page_dom(shisan_page_dom):
+        subete_no_shisan = shisan_page_dom.select(".mypageHeaderAssetSummary__col__value")[0].text + "円"
         oazukari_shisan = shisan_page_dom.select(".assets__num")[0].text
         fukumi_soneki = shisan_page_dom.select(".assets__num")[1].text
         zenjitsu_hi = shisan_page_dom.select(".assets__num")[2].text
         fukumi_soneki_percent = shisan_page_dom.select(".assets__percentage")[0].text[1:-1]
         zenjitsu_hi_percent = shisan_page_dom.select(".assets__percentage")[1].text[1:-1]
 
-        return UserShisan(oazukari_shisan, fukumi_soneki, fukumi_soneki_percent, zenjitsu_hi, zenjitsu_hi_percent)
+        return UserShisan(oazukari_shisan, fukumi_soneki, fukumi_soneki_percent, zenjitsu_hi, zenjitsu_hi_percent, subete_no_shisan)
 
 
 def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
@@ -226,7 +228,7 @@ def fetch_folio_shisan(browser):
 
     rankingNum = 1
     return {
-        "all_shisan": user_shisan.oazukari_shisan,
+        "all_shisan": user_shisan.subete_no_shisan,
         "all_theme": "\n".join(map(lambda t: t.to_slack_msg(), all_theme.themes)),
         "fukumi_soneki_percent": user_shisan.fukumi_soneki_percent,
         "fukumi_soneki": user_shisan.fukumi_soneki,
