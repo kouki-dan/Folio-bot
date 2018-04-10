@@ -19,7 +19,7 @@ class StockTest(unittest.TestCase):
     
     def test_stock_to_slack_message(self):
         stock=Stock("meigara", "10", "kingaku", "+zenzitsuhi")
-        self.assertEqual(stock.to_slack_msg(), "<http://google.co.jp/search?q=meigara|meigara>: kingaku (+zenzitsuhi)")
+        self.assertEqual(stock.to_slack_msg(), "<http://google.co.jp/search?q=meigara ニュース|meigara>: kingaku (+zenzitsuhi)")
 
     def test_stock_big_n(self):
         big_3 = Stock.big_n(StockTest.stocks, 3)
