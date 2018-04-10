@@ -1,6 +1,8 @@
 FOLIO bot
 =====
 
+[![Build Status](https://travis-ci.org/kouki-dan/Folio-bot.svg?branch=master)](https://travis-ci.org/kouki-dan/Folio-bot)
+
 ## How to use
 Please try it with this command.
 ```
