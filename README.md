@@ -34,3 +34,17 @@ kubectl create -f folio-cron.yml
 
 That's all. You will show your data on slack if configuration succeeded.
 
+## Deploy to Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+1. Use above button to create heroku app
+2. Setup schedule when deployed
+    - Click `Manage app` button to show overview
+    - Click `Heroku Scheduler` add-on to setup schedule
+    - Click `Add new job` button
+    - Set this command `python folio.py`
+    - Set schedule like below screen shot.
+    - ![setup image](https://user-images.githubusercontent.com/1401711/42095645-2a18190a-7bee-11e8-9d1e-94919289ea2e.png)
+3. Finished!
+
