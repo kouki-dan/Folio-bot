@@ -7,6 +7,7 @@ import re
 import sys
 import traceback
 import time
+import datetime
 from typing import List, Optional
 
 import mechanicalsoup
@@ -330,7 +331,20 @@ def post_shisan_to_slack(shisan, webhook_url, title):
     requests.post(webhook_url, data={"payload": payload})
 
 
+def is_weekday(datetime):
+    if datetime.weekday() == 5 or datetime.weekday() == 6:
+        return False
+    return True
+
+
 if __name__ == "__main__":
+    JST = datetime.timezone(datetime.timedelta(hours=+9), "JST")
+    datetime.now(JST)
+    # TODO: Implement skipping Japanese holiday.
+    if os.environ.get("SKIP_JP_HOLIDAY", False) and not is_weekday(datetime.now(JST)):
+        print("Today is holiday. Skipped.")
+        exit(0)
+
     mail = os.environ["USERNAME"]
     password = os.environ["PASSWORD"]
     webhook_url = os.environ["WEBHOOK_URL"]
