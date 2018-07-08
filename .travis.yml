@@ -9,4 +9,11 @@ install:
   - python3 setup.py develop
 script:
   - python3 setup.py test
+env:
+  global:
+    USERNAME="email@example.net"
+    PASSWORD="p@ssw0rd"
+    WEBHOOK_URL="URL"
+    TITLE="TITLE"
+    SKIP_JP_HOLIDAY=1
 
