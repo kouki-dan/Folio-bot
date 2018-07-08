@@ -1,0 +1,40 @@
+{
+  "name": "FOLIO bot",
+  "description": "This app posts FOLIO info to slack.",
+  "keywords": [
+    "slack",
+    "FOLIO"
+  ],
+  "website": "https://github.com/kouki-dan/FOLIO-bot",
+  "repository": "https://github.com/kouki-dan/FOLIO-bot",
+  "scripts": {
+    "postdeploy": "python setup.py develop"
+  },
+  "env": {
+    "USERNAME": {
+      "description": "Your email address of the account of FOLIO"
+    },
+    "PASSWORD": {
+      "description": "Your password address of the account of FOLIO"
+    },
+    "WEBHOOK_URL": {
+      "description": "Your slack incoming webhook url"
+    },
+    "TITLE": {
+      "description": "The title of slack message",
+      "value": "今日のFOLIO"
+    }
+  },
+  "image": "heroku/python",
+  "addons": [
+    "scheduler"
+  ],
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "python setup.py test"
+      }
+    }
+  }
+}
+
