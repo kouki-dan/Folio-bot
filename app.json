@@ -23,6 +23,10 @@
     "TITLE": {
       "description": "The title of slack message",
       "value": "今日のFOLIO"
+    },
+    "SKIP_JP_HOLIDAY": {
+      "description": "Set value to skip holiday",
+      "value": "1"
     }
   },
   "image": "heroku/python",

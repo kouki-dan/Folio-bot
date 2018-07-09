@@ -1,45 +1,49 @@
 
 import unittest
+from unittest.mock import patch
 
-from folio import Stock, Portfolio
+import folio
 
-class StockTest(unittest.TestCase):
-    stocks = [
-        Stock("ＳＵＢＡＲＵ", "6株", "22,086円", "+0.00%"),
-        Stock("日本セラミック","6株", "18,480円", "+0.82%"),
-        Stock("デンソー", "2株", "14,076円", "-0.31%"),
-        Stock("テクノスジャパン", "12株", "11,364円", "+0.53%"),
-        Stock("トヨタ自動車", "1株", "7,608円", "+0.18%"),
-        Stock("日産自動車", "5株", "5,910円", "+1.11%"),
-        Stock("ゼンリン", "1株", "4,180円", "-1.18%"),
-        Stock("ベリサーブ", "1株", "3,800円", "-2.56%"),
-        Stock("クラリオン", "9株", "3,591円", "-1.48%"),
-        Stock("ディー・エヌ・エー", "1株", "2,426円", "-0.12%"),
-    ]
-    
-    def test_stock_to_slack_message(self):
-        stock=Stock("meigara", "10", "kingaku", "+zenzitsuhi")
-        self.assertEqual(stock.to_slack_msg(), "<http://google.co.jp/search?q=meigara ニュース|meigara>: kingaku (+zenzitsuhi)")
 
-    def test_stock_big_n(self):
-        big_3 = Stock.big_n(StockTest.stocks, 3)
-        self.assertEqual(big_3[0].meigara, "日産自動車")
-        self.assertEqual(big_3[1].meigara, "日本セラミック")
-        self.assertEqual(big_3[2].meigara, "テクノスジャパン")
+class MainTest(unittest.TestCase):
 
-    def test_stock_small_n(self):
-        small_3 = Stock.small_n(StockTest.stocks, 3)
-        self.assertEqual(small_3[0].meigara, "ベリサーブ")
-        self.assertEqual(small_3[1].meigara, "クラリオン")
-        self.assertEqual(small_3[2].meigara, "ゼンリン")
+    @patch("util.is_weekday")
+    @patch("util.post_shisan_to_slack")
+    @patch("util.fetch_folio_shisan")
+    @patch("util.login")
+    def test_main_method_works(self, login_patch, fetch_folio_shisan_patch, post_shisan_to_slack_patch, is_weekday_patch):
+        login_patch.return_value = None
+        fetch_folio_shisan_patch.return_value = {
+            "all_shisan": "すべての資産",
+            "all_theme": "すべての資産",
+            "fukumi_soneki_percent": "含み損益パーセント",
+            "fukumi_soneki": "含み損益",
+            "comp_yesterday_percent": "前日比パーセント",
+            "comp_yesterday": "前日比",
+            "today_eiyu": "英雄",
+            "today_senpan": "戦犯",
+        }
+        post_shisan_to_slack_patch.return_value = None
+        is_weekday_patch.return_value = True
+        self.assertTrue(folio.main())
 
-class PotfolioTest(unittest.TestCase):
-
-    def test_portfolio_should_get_max_stock(self):
-        portfolio = Portfolio("バランス型", StockTest.stocks)
-        self.assertEqual(portfolio.max_stock().meigara, "日産自動車")
-
-    def test_portfolio_should_get_min_stock(self):
-        portfolio = Portfolio("バランス型", StockTest.stocks)
-        self.assertEqual(portfolio.min_stock().meigara, "ベリサーブ")
+    @patch("util.is_weekday")
+    @patch("util.post_shisan_to_slack")
+    @patch("util.fetch_folio_shisan")
+    @patch("util.login")
+    def test_main_method_is_not_work_on_weekends(self, login_patch, fetch_folio_shisan_patch, post_shisan_to_slack_patch, is_weekday_patch):
+        login_patch.return_value = None
+        fetch_folio_shisan_patch.return_value = {
+            "all_shisan": "すべての資産",
+            "all_theme": "すべての資産",
+            "fukumi_soneki_percent": "含み損益パーセント",
+            "fukumi_soneki": "含み損益",
+            "comp_yesterday_percent": "前日比パーセント",
+            "comp_yesterday": "前日比",
+            "today_eiyu": "英雄",
+            "today_senpan": "戦犯",
+        }
+        post_shisan_to_slack_patch.return_value = None
+        is_weekday_patch.return_value = False
+        self.assertFalse(folio.main())
 
