@@ -194,9 +194,10 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     }
 
     login_api_url = "https://folio-sec.com/api/v1/login"
-    browser.post(login_api_url, data=payload, headers={
+    login_response = browser.post(login_api_url, data=payload, headers={
         "x-csrf-token": csrf_token,
     })
+    login_response.raise_for_status() ## Please check mail/password or relogin via Web UI(https://folio-sec.com/login) when stopped at this line.
     return browser
 
 
