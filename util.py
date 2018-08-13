@@ -246,7 +246,7 @@ def post_error_to_slack(webhook_url, title):
         "attachments": [
             {{
                 "fallback": "FOLIOの情報です(ERROR)",
-                "color": "#ef1c3b",
+                "color": "#ff0000",
                 "title": "{title}(ERROR)",
                 "title_link": "https://folio-sec.com/mypage/assets",
                 "fields": [
@@ -256,9 +256,8 @@ def post_error_to_slack(webhook_url, title):
                         "short": false
                     }}
                 ],
-                "thumb_url": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
                 "footer": "Folio Bot",
-                "footer_icon": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
+                "footer_icon": "https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2018-08-08/413994431606_fe468300b6cccdefcd35_36.jpg",
                 "ts": {int(time.time())}
             }}
         ]
@@ -282,7 +281,7 @@ def post_shisan_to_slack(shisan, webhook_url, title):
         "attachments": [
             {{
                 "fallback": "FOLIOの情報です",
-                "color": "#189ac5",
+                "color": "#f26161",
                 "title": "{title}",
                 "title_link": "https://folio-sec.com/mypage/assets",
                 "fields": [
@@ -318,7 +317,7 @@ def post_shisan_to_slack(shisan, webhook_url, title):
                     }}
                 ],
                 "footer": "Folio Bot",
-                "footer_icon": "https://emoji.slack-edge.com/T5KKCPE2C/folio/c73ae303fcd0a1da.png",
+                "footer_icon": "https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2018-08-08/413994431606_fe468300b6cccdefcd35_36.jpg",
                 "ts": {int(time.time())}
             }}
         ]
