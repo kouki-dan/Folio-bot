@@ -1,8 +1,6 @@
 language: python
-os:
-  - linux
-dist: trusty
-sudo: false
+dist: xenial
+sudo: yes
 python:
   - "3.7"
 install:
