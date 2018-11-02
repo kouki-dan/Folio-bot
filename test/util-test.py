@@ -1,8 +1,9 @@
 
 import datetime
 import unittest
+import json
 
-from util import Stock, Portfolio, is_weekday
+from util import Stock, Portfolio, is_weekday, create_payload
 
 class StockTest(unittest.TestCase):
     stocks = [
@@ -61,4 +62,42 @@ class WeekDayTest(unittest.TestCase):
         self.assertTrue(is_weekday(friday))
         self.assertFalse(is_weekday(saturday))
         self.assertFalse(is_weekday(sunday))
+
+class CreatePayloadTest(unittest.TestCase):
+
+    def test_create_payload(self):
+        shisan = {
+            "all_shisan": "shisan",
+            "all_theme": "all_theme",
+            "fukumi_soneki_percent": "fukumi_soneki%",
+            "fukumi_soneki": "fukumi_soneki",
+            "comp_yesterday_percent": "comp_yesterday%",
+            "comp_yesterday": "comp_yesterday",
+            "today_eiyu": "eiyu",
+            "today_senpan": "senpan",
+        }
+
+        payload_str = create_payload("title", shisan)
+        payload = json.loads(payload_str)
+        attachment = payload["attachments"][0]
+        self.assertEqual(attachment["title"], "title")
+
+        fields = attachment["fields"]
+        self.assertEqual(fields[0]["title"], "現在の資産")
+        self.assertEqual(fields[0]["value"], "shisan")
+
+        self.assertEqual(fields[1]["title"], "含み損益 (%)")
+        self.assertEqual(fields[1]["value"], "fukumi_soneki (fukumi_soneki%)")
+
+        self.assertEqual(fields[2]["title"], "前日比 (%)")
+        self.assertEqual(fields[2]["value"], "comp_yesterday (comp_yesterday%)")
+
+        self.assertEqual(fields[3]["title"], "内訳")
+        self.assertEqual(fields[3]["value"], "all_theme")
+
+        self.assertEqual(fields[4]["title"], "本日の英雄 :sunny:")
+        self.assertEqual(fields[4]["value"], "eiyu")
+
+        self.assertEqual(fields[5]["title"], "本日の戦犯 :umbrella_with_rain_drops:")
+        self.assertEqual(fields[5]["value"], "senpan")
 

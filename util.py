@@ -265,8 +265,7 @@ def post_error_to_slack(webhook_url, title):
     """
     requests.post(webhook_url, data={"payload": payload})
 
-
-def post_shisan_to_slack(shisan, webhook_url, title):
+def create_payload(title, shisan):
     all_shisan = shisan["all_shisan"]
     all_theme = shisan["all_theme"]
     fukumi_soneki_percent = shisan["fukumi_soneki_percent"]
@@ -323,7 +322,10 @@ def post_shisan_to_slack(shisan, webhook_url, title):
         ]
     }}
     """
+    return payload
 
+def post_shisan_to_slack(shisan, webhook_url, title):
+    payload = create_payload(title, shisan)
     requests.post(webhook_url, data={"payload": payload})
 
 
