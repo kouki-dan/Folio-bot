@@ -275,54 +275,53 @@ def create_payload(title, shisan):
     today_eiyu = shisan["today_eiyu"]
     today_senpan= shisan["today_senpan"]
 
-    payload = f"""
-    {{
+    payload = {
         "attachments": [
-            {{
+            {
                 "fallback": "FOLIOの情報です",
                 "color": "#f26161",
-                "title": "{title}",
+                "title": title,
                 "title_link": "https://folio-sec.com/mypage/assets",
                 "fields": [
-                    {{
+                    {
                         "title": "現在の資産",
-                        "value": "{all_shisan}",
-                        "short": false
-                    }},
-                    {{
+                        "value": all_shisan,
+                        "short": False
+                    },
+                    {
                         "title": "含み損益 (%)",
-                        "value": "{fukumi_soneki} ({fukumi_soneki_percent})",
-                        "short": true
-                    }},
-                    {{
+                        "value": f"{fukumi_soneki} ({fukumi_soneki_percent})",
+                        "short": True
+                    },
+                    {
                         "title": "前日比 (%)",
-                        "value": "{comp_yesterday} ({comp_yesterday_percent})",
-                        "short": true
-                    }},
-                    {{
+                        "value": f"{comp_yesterday} ({comp_yesterday_percent})",
+                        "short": True
+                    },
+                    {
                         "title": "内訳",
-                        "value": "{all_theme}",
-                        "short": false
-                    }},
-                    {{
+                        "value": all_theme,
+                        "short": False
+                    },
+                    {
                         "title": "本日の英雄 :sunny:",
-                        "value": "{today_eiyu}",
-                        "short": true
-                    }},
-                    {{
+                        "value": today_eiyu,
+                        "short": True
+                    },
+                    {
                         "title": "本日の戦犯 :umbrella_with_rain_drops:",
-                        "value": "{today_senpan}",
-                        "short": true
-                    }}
+                        "value": today_senpan,
+                        "short": True
+                    }
                 ],
                 "footer": "Folio Bot",
                 "footer_icon": "https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2018-08-08/413994431606_fe468300b6cccdefcd35_36.jpg",
-                "ts": {int(time.time())}
-            }}
+                "ts": int(time.time())
+            }
         ]
-    }}
-    """
-    return payload
+    }
+    return json.dumps(payload)
+
 
 def post_shisan_to_slack(shisan, webhook_url, title):
     payload = create_payload(title, shisan)
