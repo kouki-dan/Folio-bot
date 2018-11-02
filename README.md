@@ -10,7 +10,7 @@ docker run -e USERNAME="<Your mail address>" -e PASSWORD="<Your password>" -e WE
 ```
 
 After login successful, you will see like this image:   
-<img width="553" alt="screen shot 2018-03-03 at 11 43 54 pm" src="https://user-images.githubusercontent.com/1401711/36935689-1b5c807a-1f3e-11e8-96f3-eefb6bf3ea1b.png">
+<img width="553" alt="screen shot 2018-03-03 at 11 43 54 pm" src="https://user-images.githubusercontent.com/1401711/45990546-c7e6a900-c0bb-11e8-8f2b-51ff4c9ca39d.png">
 
 
 ## How to develop
