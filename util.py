@@ -172,7 +172,7 @@ class Omakase:
     def parse_theme_from_dom(theme_page_dom) -> Optional[Omakase]:
         try:
             plan = theme_page_dom.select(".myPlan__name")[0].text
-        except:
+        except IndexError:
             return None
 
         assets_num_doms = theme_page_dom.select(".assets__num")
