@@ -315,7 +315,7 @@ def post_error_to_slack(webhook_url, title):
                 "fields": [
                     {{
                         "title": "情報の取得に失敗しました",
-                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください。{exc_string}",
+                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください。\n<https://github.com/kouki-dan/folio-bot/issues|こちら>から問題の報告もお待ちしています。\n{exc_string}",
                         "short": false
                     }}
                 ],
