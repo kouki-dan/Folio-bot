@@ -1,6 +1,7 @@
 
 import unittest
 from unittest.mock import patch
+import os
 
 import folio
 
@@ -45,5 +46,7 @@ class MainTest(unittest.TestCase):
         }
         post_shisan_to_slack_patch.return_value = None
         is_weekday_patch.return_value = False
+
+        os.environ["SKIP_JP_HOLIDAY"] = "1"
         self.assertFalse(folio.main())
 

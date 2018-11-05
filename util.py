@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 import html
 import json
 import sys
@@ -148,6 +150,50 @@ class UserAllTheme:
         return shisan_page_dom.select(".assetsCard__card")
 
 
+class Omakase:
+    def __init__(self, plan: str, oazukari_shisan: str, fukumi_soneki: str, fukumi_soneki_percent: str,
+                 zenjitsu_hi: str, zenjitsu_hi_percent: str):
+        self.plan = plan
+        self.oazukari_shisan = oazukari_shisan
+        self.fukumi_soneki = fukumi_soneki
+        self.fukumi_soneki_percent = fukumi_soneki_percent
+        self.zenjitsu_hi = zenjitsu_hi
+        self.zenjitsu_hi_percent = zenjitsu_hi_percent
+        self.url = "https://folio-sec.com/mypage/assets/omakase"
+
+    def __str__(self) -> str:
+        return str(vars(self))
+
+    def to_slack_msg(self) -> str:
+        return f"<{self.url}|{self.plan}>: {self.oazukari_shisan}\n" \
+               f"  含み損益:{self.fukumi_soneki}{self.fukumi_soneki_percent} 前日比:{self.zenjitsu_hi}{self.zenjitsu_hi_percent}"
+
+    @staticmethod
+    def parse_theme_from_dom(theme_page_dom) -> Optional[Omakase]:
+        try:
+            plan = theme_page_dom.select(".myPlan__name")[0].text
+        except IndexError:
+            return None
+
+        assets_num_doms = theme_page_dom.select(".assets__num")
+        oazukari_shisan = assets_num_doms[0].text
+        fukumi_soneki = assets_num_doms[1].text
+        zenjitsu_hi = assets_num_doms[2].text
+
+        percent_doms = theme_page_dom.select(".assets__percentage")
+        fukumi_soneki_percent = percent_doms[0].text
+        zenjitsu_hi_percent = percent_doms[1].text
+
+        return Omakase(
+            plan,
+            oazukari_shisan,
+            fukumi_soneki,
+            fukumi_soneki_percent,
+            zenjitsu_hi,
+            zenjitsu_hi_percent,
+        )
+
+
 class UserShisan:
     shisan_url = "https://folio-sec.com/mypage/assets"
 
@@ -219,15 +265,32 @@ def fetch_folio_all_theme(browser, shisan_page_dom) -> UserAllTheme:
     return UserAllTheme(all_theme_array)
 
 
+def fetch_folio_omakase(browser) -> Optional[Omakase]:
+    omakase_page_dom = browser.open("https://folio-sec.com/mypage/assets/omakase")
+    return Omakase.parse_theme_from_dom(omakase_page_dom.soup)
+
+
 def fetch_folio_shisan(browser):
     shisan_page = browser.open(UserShisan.shisan_url)
     user_shisan = UserShisan.parse_user_shisan_page_dom(shisan_page.soup)
     all_theme = fetch_folio_all_theme(browser, shisan_page.soup)
+    omakase = fetch_folio_omakase(browser)
+
+    if len(all_theme.themes) > 0:
+        all_theme_str = "\n".join(map(lambda t: t.to_slack_msg(), all_theme.themes))
+    else:
+        all_theme_str = None
+
+    if omakase:
+        omakase_str = omakase.to_slack_msg()
+    else:
+        omakase_str = None
 
     rankingNum = 1
     return {
         "all_shisan": user_shisan.subete_no_shisan,
-        "all_theme": "\n".join(map(lambda t: t.to_slack_msg(), all_theme.themes)),
+        "all_theme": all_theme_str,
+        "omakase": omakase_str,
         "fukumi_soneki_percent": user_shisan.fukumi_soneki_percent,
         "fukumi_soneki": user_shisan.fukumi_soneki,
         "comp_yesterday_percent": user_shisan.zenjitsu_hi_percent,
@@ -252,7 +315,7 @@ def post_error_to_slack(webhook_url, title):
                 "fields": [
                     {{
                         "title": "情報の取得に失敗しました",
-                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください。{exc_string}",
+                        "value": "<https://folio-sec.com/|FOLIO公式サイト>や<https://github.com/kouki-dan/Folio-bot|Botのバージョン>をご確認ください。\n<https://github.com/kouki-dan/folio-bot/issues|こちら>から問題の報告もお待ちしています。\n{exc_string}",
                         "short": false
                     }}
                 ],
@@ -265,65 +328,81 @@ def post_error_to_slack(webhook_url, title):
     """
     requests.post(webhook_url, data={"payload": payload})
 
-
-def post_shisan_to_slack(shisan, webhook_url, title):
+def create_payload(title, shisan):
     all_shisan = shisan["all_shisan"]
     all_theme = shisan["all_theme"]
+    omakase = shisan["omakase"]
     fukumi_soneki_percent = shisan["fukumi_soneki_percent"]
     fukumi_soneki = shisan["fukumi_soneki"]
     comp_yesterday_percent = shisan["comp_yesterday_percent"]
     comp_yesterday = shisan["comp_yesterday"]
     today_eiyu = shisan["today_eiyu"]
-    today_senpan= shisan["today_senpan"]
+    today_senpan = shisan["today_senpan"]
 
-    payload = f"""
-    {{
+    utiwake = []
+
+    if all_theme:
+        utiwake.append({
+            "title": "テーマ内訳",
+            "value": all_theme,
+            "short": False
+        })
+
+    if omakase:
+        utiwake.append({
+            "title": "おまかせ投資内訳",
+            "value": omakase,
+            "short": False
+        })
+
+    if all_theme:
+        utiwake.append({
+            "title": "本日の英雄 :sunny:",
+            "value": today_eiyu,
+            "short": True
+        })
+
+        utiwake.append({
+            "title": "本日の戦犯 :umbrella_with_rain_drops:",
+            "value": today_senpan,
+            "short": True
+        })
+
+    payload = {
         "attachments": [
-            {{
+            {
                 "fallback": "FOLIOの情報です",
                 "color": "#f26161",
-                "title": "{title}",
+                "title": title,
                 "title_link": "https://folio-sec.com/mypage/assets",
                 "fields": [
-                    {{
+                    {
                         "title": "現在の資産",
-                        "value": "{all_shisan}",
-                        "short": false
-                    }},
-                    {{
+                        "value": all_shisan,
+                        "short": False
+                    },
+                    {
                         "title": "含み損益 (%)",
-                        "value": "{fukumi_soneki} ({fukumi_soneki_percent})",
-                        "short": true
-                    }},
-                    {{
+                        "value": f"{fukumi_soneki} ({fukumi_soneki_percent})",
+                        "short": True
+                    },
+                    {
                         "title": "前日比 (%)",
-                        "value": "{comp_yesterday} ({comp_yesterday_percent})",
-                        "short": true
-                    }},
-                    {{
-                        "title": "内訳",
-                        "value": "{all_theme}",
-                        "short": false
-                    }},
-                    {{
-                        "title": "本日の英雄 :sunny:",
-                        "value": "{today_eiyu}",
-                        "short": true
-                    }},
-                    {{
-                        "title": "本日の戦犯 :umbrella_with_rain_drops:",
-                        "value": "{today_senpan}",
-                        "short": true
-                    }}
-                ],
+                        "value": f"{comp_yesterday} ({comp_yesterday_percent})",
+                        "short": True
+                    },
+                ] + utiwake,
                 "footer": "Folio Bot",
                 "footer_icon": "https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2018-08-08/413994431606_fe468300b6cccdefcd35_36.jpg",
-                "ts": {int(time.time())}
-            }}
+                "ts": int(time.time())
+            }
         ]
-    }}
-    """
+    }
+    return json.dumps(payload)
 
+
+def post_shisan_to_slack(shisan, webhook_url, title):
+    payload = create_payload(title, shisan)
     requests.post(webhook_url, data={"payload": payload})
 
 
