@@ -35,6 +35,14 @@ class StockTest(unittest.TestCase):
         self.assertEqual(small_3[1].meigara, "クラリオン")
         self.assertEqual(small_3[2].meigara, "ゼンリン")
 
+    def test_stock_big_n_with_no_zenjitsu_hi(self):
+        big_3 = Stock.big_n(StockTest.stocks + [
+            Stock("前日比なし", "2株", "¥--円", "--%"),
+        ], 3)
+        self.assertEqual(big_3[0].meigara, "日産自動車")
+        self.assertEqual(big_3[1].meigara, "日本セラミック")
+        self.assertEqual(big_3[2].meigara, "テクノスジャパン")
+
 class PotfolioTest(unittest.TestCase):
 
     def test_portfolio_should_get_max_stock(self):

@@ -27,11 +27,18 @@ class Stock:
 
     @staticmethod
     def big_n(stocks, num):
-        return sorted(stocks, key=lambda x: float(x.zenjitsu_hi_percent[:-1]), reverse=True)[0:num]
+        return sorted(stocks, key=lambda x: Stock.floatOr0(x.zenjitsu_hi_percent[:-1]), reverse=True)[0:num]
 
     @staticmethod
     def small_n(stocks, num):
-        return sorted(stocks, key=lambda x: float(x.zenjitsu_hi_percent[:-1]), reverse=False)[0:num]
+        return sorted(stocks, key=lambda x: Stock.floatOr0(x.zenjitsu_hi_percent[:-1]), reverse=False)[0:num]
+
+    @staticmethod
+    def floatOr0(num):
+        try:
+            return float(num)
+        except ValueError:
+            return 0.0
 
 
 class Portfolio:
