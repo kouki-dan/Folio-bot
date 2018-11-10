@@ -204,9 +204,8 @@ class Omakase:
 class UserShisan:
     shisan_url = "https://folio-sec.com/mypage/assets"
 
-    def __init__(self, oazukari_shisan: str, fukumi_soneki: str, fukumi_soneki_percent: str, zenjitsu_hi: str,
+    def __init__(self, fukumi_soneki: str, fukumi_soneki_percent: str, zenjitsu_hi: str,
               zenjitsu_hi_percent: str, subete_no_shisan: str):
-        self.oazukari_shisan = oazukari_shisan
         self.fukumi_soneki = fukumi_soneki
         self.fukumi_soneki_percent = fukumi_soneki_percent
         self.zenjitsu_hi = zenjitsu_hi
@@ -218,14 +217,14 @@ class UserShisan:
 
     @staticmethod
     def parse_user_shisan_page_dom(shisan_page_dom):
-        subete_no_shisan = shisan_page_dom.select(".mypageHeaderAssetSummary__col__value")[0].text + "円"
-        oazukari_shisan = shisan_page_dom.select(".assets__num")[0].text
-        fukumi_soneki = shisan_page_dom.select(".assets__num")[1].text
-        zenjitsu_hi = shisan_page_dom.select(".assets__num")[2].text
-        fukumi_soneki_percent = shisan_page_dom.select(".assets__percentage")[0].text[1:-1]
-        zenjitsu_hi_percent = shisan_page_dom.select(".assets__percentage")[1].text[1:-1]
+        asset_summary = shisan_page_dom.select(".mypageHeaderAssetSummary > div")
+        subete_no_shisan = asset_summary[0].select(".mypageHeaderAssetSummary__col__value__price")[0].text
 
-        return UserShisan(oazukari_shisan, fukumi_soneki, fukumi_soneki_percent, zenjitsu_hi, zenjitsu_hi_percent, subete_no_shisan)
+        fukumi_soneki = asset_summary[1].select(".mypageHeaderAssetSummary__col__value__price")[0].text
+        zenjitsu_hi = asset_summary[2].select(".mypageHeaderAssetSummary__col__value__price")[0].text
+        fukumi_soneki_percent = asset_summary[1].select(".mypageHeaderAssetSummary__col__label__ratio")[0].text[1:-1]
+        zenjitsu_hi_percent = asset_summary[2].select(".mypageHeaderAssetSummary__col__label__ratio")[0].text[1:-1]
+        return UserShisan(fukumi_soneki, fukumi_soneki_percent, zenjitsu_hi, zenjitsu_hi_percent, subete_no_shisan)
 
 
 def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
@@ -390,12 +389,12 @@ def create_payload(title, shisan):
                     },
                     {
                         "title": "含み損益 (%)",
-                        "value": f"{fukumi_soneki} ({fukumi_soneki_percent})",
+                        "value": f"{fukumi_soneki}（{fukumi_soneki_percent}）",
                         "short": True
                     },
                     {
                         "title": "前日比 (%)",
-                        "value": f"{comp_yesterday} ({comp_yesterday_percent})",
+                        "value": f"{comp_yesterday}（{comp_yesterday_percent}）",
                         "short": True
                     },
                 ] + utiwake,

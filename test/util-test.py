@@ -96,10 +96,10 @@ class CreatePayloadTest(unittest.TestCase):
         self.assertEqual(fields[0]["value"], "shisan")
 
         self.assertEqual(fields[1]["title"], "含み損益 (%)")
-        self.assertEqual(fields[1]["value"], "fukumi_soneki (fukumi_soneki%)")
+        self.assertEqual(fields[1]["value"], "fukumi_soneki（fukumi_soneki%）")
 
         self.assertEqual(fields[2]["title"], "前日比 (%)")
-        self.assertEqual(fields[2]["value"], "comp_yesterday (comp_yesterday%)")
+        self.assertEqual(fields[2]["value"], "comp_yesterday（comp_yesterday%）")
 
         self.assertEqual(fields[3]["title"], "テーマ内訳")
         self.assertEqual(fields[3]["value"], "all_theme")
@@ -133,10 +133,10 @@ class CreatePayloadTest(unittest.TestCase):
         self.assertEqual(fields[0]["value"], "shisan")
 
         self.assertEqual(fields[1]["title"], "含み損益 (%)")
-        self.assertEqual(fields[1]["value"], "fukumi_soneki (fukumi_soneki%)")
+        self.assertEqual(fields[1]["value"], "fukumi_soneki（fukumi_soneki%）")
 
         self.assertEqual(fields[2]["title"], "前日比 (%)")
-        self.assertEqual(fields[2]["value"], "comp_yesterday (comp_yesterday%)")
+        self.assertEqual(fields[2]["value"], "comp_yesterday（comp_yesterday%）")
 
         self.assertEqual(fields[3]["title"], "おまかせ投資内訳")
         self.assertEqual(fields[3]["value"], "omakase")
@@ -166,10 +166,10 @@ class CreatePayloadTest(unittest.TestCase):
         self.assertEqual(fields[0]["value"], "shisan")
 
         self.assertEqual(fields[1]["title"], "含み損益 (%)")
-        self.assertEqual(fields[1]["value"], "fukumi_soneki (fukumi_soneki%)")
+        self.assertEqual(fields[1]["value"], "fukumi_soneki（fukumi_soneki%）")
 
         self.assertEqual(fields[2]["title"], "前日比 (%)")
-        self.assertEqual(fields[2]["value"], "comp_yesterday (comp_yesterday%)")
+        self.assertEqual(fields[2]["value"], "comp_yesterday（comp_yesterday%）")
 
         self.assertEqual(fields[3]["title"], "テーマ内訳")
         self.assertEqual(fields[3]["value"], "theme")
