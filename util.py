@@ -42,8 +42,7 @@ class Stock:
 
 
 class Portfolio:
-    def __init__(self, style: str, stocks: List[Stock]):
-        self.style = style  # 投資スタイル
+    def __init__(self, stocks: List[Stock]):
         self.stocks = stocks  # 株
 
     def __str__(self) -> str:
@@ -57,7 +56,6 @@ class Portfolio:
 
     @staticmethod
     def parse_portfolio_from_dom(portfolio_box_dom):
-        style = portfolio_box_dom.select(".portfolioBox__optimizeType")[0].text
         stocks_doms = portfolio_box_dom.select("tbody")[0].select("tr")
         stocks = []
 
@@ -69,7 +67,7 @@ class Portfolio:
             zenjitsu_hi = column[3].text
             stocks.append(Stock(meigara, kabu_suu, unyo_kingaku, zenjitsu_hi))
 
-        return Portfolio(style, stocks)
+        return Portfolio(stocks)
 
 
 class Theme:
