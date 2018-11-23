@@ -46,11 +46,11 @@ class StockTest(unittest.TestCase):
 class PotfolioTest(unittest.TestCase):
 
     def test_portfolio_should_get_max_stock(self):
-        portfolio = Portfolio("バランス型", StockTest.stocks)
+        portfolio = Portfolio(StockTest.stocks)
         self.assertEqual(portfolio.max_stock().meigara, "日産自動車")
 
     def test_portfolio_should_get_min_stock(self):
-        portfolio = Portfolio("バランス型", StockTest.stocks)
+        portfolio = Portfolio(StockTest.stocks)
         self.assertEqual(portfolio.min_stock().meigara, "ベリサーブ")
 
 class WeekDayTest(unittest.TestCase):
