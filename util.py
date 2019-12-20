@@ -176,7 +176,7 @@ class Omakase:
     @staticmethod
     def parse_theme_from_dom(theme_page_dom) -> Optional[Omakase]:
         try:
-            plan = theme_page_dom.select(".myPlan__name")[0].text
+            plan = theme_page_dom.select("[class^='MyPlan__name']")[0].text
         except IndexError:
             return None
 
