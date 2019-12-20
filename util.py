@@ -234,9 +234,9 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
 
     login_url = "https://folio-sec.com/login"
     login_page = browser.open(login_url)
-    csrf_token_dict_str = login_page.soup.select("#initial-data")[0]["data-json"]
+    csrf_token_dict_str = login_page.soup.select("#meta")[0]["data-json"]
     token_dict = json.loads(html.unescape(csrf_token_dict_str))
-    csrf_token = token_dict["data"]["csrf"]
+    csrf_token = token_dict["csrf"]
 
     payload = {
         "username": mail,
