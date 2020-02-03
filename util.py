@@ -152,7 +152,7 @@ class UserAllTheme:
 
     @staticmethod
     def parse_all_theme_card_doms(shisan_page_dom):
-        return shisan_page_dom.select(".assetsCard__card")
+        return shisan_page_dom.select_one("section[class*=assetsCard]").select("a[class*=assetsCard]")
 
 
 class Omakase:
