@@ -15,6 +15,16 @@ def main():
     password = os.environ["PASSWORD"]
     webhook_url = os.environ["WEBHOOK_URL"]
     title = os.environ.get("TITLE", "今日のフォリオ")
+    wealthnavi_mode = os.environ.get("WEALTHNAVI_MODE", False)
+    if wealthnavi_mode:
+        try:
+            browser = util.login_wealth_navi(mail, password)
+            shisan = util.fetch_wealthnavi_shisan(browser)
+        except:
+            util.post_error_to_slack(webhook_url, title)
+            return False
+        util.post_wealthnavi_shisan_to_slack(shisan, webhook_url, title)
+        return True
 
     try:
         browser = util.login(mail, password)
