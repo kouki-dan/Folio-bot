@@ -3,6 +3,7 @@ MAINTAINER Kouki Saito <dan.addr.skd@gmail.com>
 
 RUN groupadd -r dockeruser && useradd -r -g dockeruser dockeruser
 WORKDIR /app
+COPY ./version.py version.py
 COPY ./setup.py setup.py
 RUN python setup.py develop
 COPY . /app

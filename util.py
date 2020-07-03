@@ -11,6 +11,8 @@ from typing import List, Optional
 import mechanicalsoup
 import requests
 
+import version
+
 
 class Stock:
     def __init__(self, meigara: str, kabu_suu: str, unyo_kingaku: str, zenjitsu_hi_percent: str):
@@ -229,7 +231,7 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     browser = mechanicalsoup.StatefulBrowser(
         soup_config={'features': 'html.parser'},
         raise_on_404=True,
-        user_agent='Mozilla/5.0 (compatible; Edge; Foliobot/0.6.0; +http://github.com/kouki-dan/folio-bot)',
+        user_agent=user_agent(),
     )
 
     login_url = "https://folio-sec.com/login"
@@ -250,6 +252,23 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     login_response.raise_for_status() ## Please check mail/password or relogin via Web UI(https://folio-sec.com/login) when stopped at this line.
     return browser
 
+def login_wealth_navi(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
+    browser = mechanicalsoup.StatefulBrowser(
+        soup_config={'features': 'html.parser'},
+        raise_on_404=True,
+        user_agent=user_agent(),
+    )
+
+    login_url = "https://invest.wealthnavi.com/"
+    login_page = browser.open(login_url)
+
+    login_page.soup.select("form")[0].select("#username")[0]["value"] = mail
+    login_page.soup.select("form")[0].select("#password")[0]["value"] = password
+    login_page.soup.select("form")[0]["action"] = "https://invest.wealthnavi.com/login"
+    login_response = browser.submit(login_page.soup.select("form")[0])
+
+    login_response.raise_for_status() ## Please check mail/password or relogin via Web UI(https://folio-sec.com/login) when stopped at this line.
+    return browser
 
 def fetch_folio_theme_shisan(browser, theme_card_dom) -> Optional[Theme]:
     theme_url = Theme.parse_theme_url_from_dom(theme_card_dom)
@@ -303,6 +322,30 @@ def fetch_folio_shisan(browser):
         "today_senpan": "\n".join([stock.to_slack_msg() for stock in all_theme.senpanRankingForAllTheme(rankingNum)])
     }
 
+def fetch_wealthnavi_shisan(browser):
+    portfolio = browser.open("https://invest.wealthnavi.com/service/portfolio")
+    hyokagaku = portfolio.soup.select(".currency-info")[0]
+
+    all_shisan = hyokagaku.select(".evaluation")[0].text
+    fukumi_soneki = hyokagaku.select(".difference")[0].text
+    fukumi_soneki_percent = hyokagaku.select(".per")[0].text
+
+    # TODO: calc yesterday info from hyokagaku
+    # yesterday_hyokagaku = portfolio.soup.select(".graph .data-history")[0].select("tbody")[0].select("tr")[1]
+
+    utiwake = ""
+    for x in portfolio.soup.select("#assets-class-data")[0].select("tr")[1:]:
+        splitted = x.text.split("\n")[1:]
+        utiwake += " ".join(splitted[:2]) + " (" + splitted[2] + ")" + "\n"
+
+    return {
+        "all_shisan": all_shisan,
+        "fukumi_soneki": fukumi_soneki,
+        "fukumi_soneki_percent": fukumi_soneki_percent,
+        # "comp_yesterday_percent": shisan["comp_yesterday_percent"],
+        # "comp_yesterday": shisan["comp_yesterday"],
+        "utiwake": utiwake,
+    }
 
 def post_error_to_slack(webhook_url, title):
     exc = sys.exc_info()
@@ -404,14 +447,56 @@ def create_payload(title, shisan):
     }
     return json.dumps(payload)
 
+def create_wealthnavi_payload(title, shisan):
+    all_shisan = shisan["all_shisan"]
+    fukumi_soneki_percent = shisan["fukumi_soneki_percent"]
+    fukumi_soneki = shisan["fukumi_soneki"]
+    utiwake = shisan["utiwake"]
+
+    payload = {
+        "attachments": [
+            {
+                "fallback": "FOLIOの情報です",
+                "color": "#3584dc",
+                "title": title,
+                "title_link": "https://invest.wealthnavi.com/service/portfolio",
+                "fields": [
+                    {
+                        "title": "現在の資産",
+                        "value": all_shisan,
+                        "short": False
+                    },
+                    {
+                        "title": "含み損益 (%)",
+                        "value": f"{fukumi_soneki}（{fukumi_soneki_percent}）",
+                        "short": True
+                    },
+                    {
+                        "title": "資産内訳",
+                        "value": utiwake,
+                        "short": False
+                    },
+                ],
+                "footer": "Folio Bot",
+                "footer_icon": "https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2018-08-08/413994431606_fe468300b6cccdefcd35_36.jpg",
+                "ts": int(time.time())
+            }
+        ]
+    }
+    return json.dumps(payload)
 
 def post_shisan_to_slack(shisan, webhook_url, title):
     payload = create_payload(title, shisan)
     requests.post(webhook_url, data={"payload": payload})
 
+def post_wealthnavi_shisan_to_slack(shisan, webhook_url, title):
+    payload = create_wealthnavi_payload(title, shisan)
+    requests.post(webhook_url, data={"payload": payload})
 
 def is_weekday(target_datetime):
     if target_datetime.weekday() == 5 or target_datetime.weekday() == 6:
         return False
     return True
 
+def user_agent() -> str:
+    return f'Mozilla/5.0 (compatible; Edge; Foliobot/{version.version}; +http://github.com/kouki-dan/folio-bot)'
