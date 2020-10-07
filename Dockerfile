@@ -1,4 +1,4 @@
-FROM python:3.7.1
+FROM python:3.9.0
 MAINTAINER Kouki Saito <dan.addr.skd@gmail.com>
 
 RUN groupadd -r dockeruser && useradd -r -g dockeruser dockeruser
