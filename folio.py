@@ -37,7 +37,7 @@ if __name__ == "__main__":
         def run():
             main()
             return ""
-        app.run(port=port)
+        app.run(host="0.0.0.0", port=port)
     else:
         main()
     exit(0)
