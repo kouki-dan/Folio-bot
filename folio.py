@@ -25,7 +25,19 @@ def main():
     util.post_shisan_to_slack(shisan, webhook_url, title)
     return True
 
-if __name__ == "__main__":
-    main()
-    exit(0)
 
+if __name__ == "__main__":
+    if os.environ.get("CLOUDRUN", False):
+        import flask
+        app = flask.Flask(__name__)
+        port = os.environ.get("PORT", 5000)
+        port = int(port)
+
+        @app.route("/run", methods=["POST"])
+        def run():
+            main()
+            return ""
+        app.run(port=port)
+    else:
+        main()
+    exit(0)
