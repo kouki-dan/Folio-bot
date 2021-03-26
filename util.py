@@ -237,7 +237,7 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     browser = mechanicalsoup.StatefulBrowser(
         soup_config={'features': 'html.parser'},
         raise_on_404=True,
-        user_agent='Mozilla/5.0 (compatible; Edge; Foliobot/0.6.0; +http://github.com/kouki-dan/folio-bot)',
+        user_agent='Mozilla/5.0 (compatible; Edge; Foliobot/0.8.0; +http://github.com/kouki-dan/folio-bot)',
     )
 
     login_url = "https://folio-sec.com/login"
