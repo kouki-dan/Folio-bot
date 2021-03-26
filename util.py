@@ -106,7 +106,7 @@ class Theme:
     @staticmethod
     def parse_theme_from_dom(theme_page_dom, url: str):
         titleDoms = theme_page_dom.select(".box__titleMain")
-        ## 購入中の場合emptyになる。
+        # 購入中の場合emptyになる。
         if len(titleDoms) == 0:
             return None
         name = titleDoms[0].text.rstrip("の資産")
@@ -120,10 +120,12 @@ class Theme:
         fukumi_soneki_percent = percent_doms[0].text
         zenjitsu_hi_percent = percent_doms[1].text
 
-        portfolio_box_doms = theme_page_dom.select(".portfolioBox")
+        portfolio_box_doms = theme_page_dom.select(
+            "table[class*=\"PortfolioBox\"]")
         all_portfolios = []
         for i, portfolio_box_dom in enumerate(portfolio_box_doms):
-            all_portfolios.append(Portfolio.parse_portfolio_from_dom(portfolio_box_dom))
+            all_portfolios.append(
+                Portfolio.parse_portfolio_from_dom(portfolio_box_dom))
 
         return Theme(
             name,
@@ -203,7 +205,7 @@ class UserShisan:
     shisan_url = "https://folio-sec.com/mypage/assets"
 
     def __init__(self, fukumi_soneki: str, fukumi_soneki_percent: str, zenjitsu_hi: str,
-              zenjitsu_hi_percent: str, subete_no_shisan: str):
+                 zenjitsu_hi_percent: str, subete_no_shisan: str):
         self.fukumi_soneki = fukumi_soneki
         self.fukumi_soneki_percent = fukumi_soneki_percent
         self.zenjitsu_hi = zenjitsu_hi
@@ -215,13 +217,19 @@ class UserShisan:
 
     @staticmethod
     def parse_user_shisan_page_dom(shisan_page_dom):
-        asset_summary = shisan_page_dom.select(".mypageHeaderAssetSummary > div")
-        subete_no_shisan = asset_summary[0].select(".mypageHeaderAssetSummary__col__value__price")[0].text
+        asset_summary = shisan_page_dom.select(
+            "div[class*=\"HeaderAssetSummary__mypageHeaderAssetSummary\"] > div")
+        subete_no_shisan = asset_summary[0].select(
+            "span[class*=\"HeaderAssetSummary__colValuePrice\"]")[0].text
 
-        fukumi_soneki = asset_summary[1].select(".mypageHeaderAssetSummary__col__value__price")[0].text
-        zenjitsu_hi = asset_summary[2].select(".mypageHeaderAssetSummary__col__value__price")[0].text
-        fukumi_soneki_percent = asset_summary[1].select(".mypageHeaderAssetSummary__col__label__ratio")[0].text[1:-1]
-        zenjitsu_hi_percent = asset_summary[2].select(".mypageHeaderAssetSummary__col__label__ratio")[0].text[1:-1]
+        fukumi_soneki = asset_summary[1].select(
+            "span[class*=\"HeaderAssetSummary__colValuePrice\"]")[0].text
+        zenjitsu_hi = asset_summary[2].select(
+            "span[class*=\"HeaderAssetSummary__colValuePrice\"]")[0].text
+        fukumi_soneki_percent = asset_summary[1].select(
+            "span[class*=\"HeaderAssetSummary__colLabelRatio\"]")[0].text[1:-1]
+        zenjitsu_hi_percent = asset_summary[2].select(
+            "span[class*=\"HeaderAssetSummary__colLabelRatio\"]")[0].text[1:-1]
         return UserShisan(fukumi_soneki, fukumi_soneki_percent, zenjitsu_hi, zenjitsu_hi_percent, subete_no_shisan)
 
 
@@ -229,7 +237,7 @@ def login(mail: str, password: str) -> mechanicalsoup.StatefulBrowser:
     browser = mechanicalsoup.StatefulBrowser(
         soup_config={'features': 'html.parser'},
         raise_on_404=True,
-        user_agent='Mozilla/5.0 (compatible; Edge; Foliobot/0.6.0; +http://github.com/kouki-dan/folio-bot)',
+        user_agent='Mozilla/5.0 (compatible; Edge; Foliobot/0.8.0; +http://github.com/kouki-dan/folio-bot)',
     )
 
     login_url = "https://folio-sec.com/login"
