@@ -158,46 +158,31 @@ class UserAllTheme:
 
 
 class Omakase:
-    def __init__(self, plan: str, oazukari_shisan: str, fukumi_soneki: str, fukumi_soneki_percent: str,
-                 zenjitsu_hi: str, zenjitsu_hi_percent: str):
+    def __init__(self, plan: str, oazukari_shisan: str):
         self.plan = plan
         self.oazukari_shisan = oazukari_shisan
-        self.fukumi_soneki = fukumi_soneki
-        self.fukumi_soneki_percent = fukumi_soneki_percent
-        self.zenjitsu_hi = zenjitsu_hi
-        self.zenjitsu_hi_percent = zenjitsu_hi_percent
         self.url = "https://folio-sec.com/mypage/assets/omakase"
 
     def __str__(self) -> str:
         return str(vars(self))
 
     def to_slack_msg(self) -> str:
-        return f"<{self.url}|{self.plan}>: {self.oazukari_shisan}\n" \
-               f"  含み損益:{self.fukumi_soneki}{self.fukumi_soneki_percent} 前日比:{self.zenjitsu_hi}{self.zenjitsu_hi_percent}"
+        return f"<{self.url}|{self.plan}>: {self.oazukari_shisan}\n"
 
     @staticmethod
-    def parse_theme_from_dom(theme_page_dom) -> Optional[Omakase]:
+    def parse_omakase_from_dom(omakase_page_dom) -> Optional[Omakase]:
         try:
-            plan = theme_page_dom.select("[class^='MyPlan__name']")[0].text
+            plan = omakase_page_dom.select(
+                "[class^='CardHeader__name']")[0].text
         except IndexError:
             return None
 
-        assets_num_doms = theme_page_dom.select(".assets__num")
+        assets_num_doms = omakase_page_dom.select(".assets__num")
         oazukari_shisan = assets_num_doms[0].text
-        fukumi_soneki = assets_num_doms[1].text
-        zenjitsu_hi = assets_num_doms[2].text
-
-        percent_doms = theme_page_dom.select(".assets__percentage")
-        fukumi_soneki_percent = percent_doms[0].text
-        zenjitsu_hi_percent = percent_doms[1].text
 
         return Omakase(
             plan,
             oazukari_shisan,
-            fukumi_soneki,
-            fukumi_soneki_percent,
-            zenjitsu_hi,
-            zenjitsu_hi_percent,
         )
 
 
@@ -217,19 +202,20 @@ class UserShisan:
 
     @staticmethod
     def parse_user_shisan_page_dom(shisan_page_dom):
-        asset_summary = shisan_page_dom.select(
-            "div[class*=\"HeaderAssetSummary__mypageHeaderAssetSummary\"] > div")
-        subete_no_shisan = asset_summary[0].select(
-            "span[class*=\"HeaderAssetSummary__colValuePrice\"]")[0].text
+        subete_no_shisan = shisan_page_dom.select(
+            "span[class*=\"HeaderAssetSummary__amount\"]")[0].text
 
-        fukumi_soneki = asset_summary[1].select(
-            "span[class*=\"HeaderAssetSummary__colValuePrice\"]")[0].text
-        zenjitsu_hi = asset_summary[2].select(
-            "span[class*=\"HeaderAssetSummary__colValuePrice\"]")[0].text
-        fukumi_soneki_percent = asset_summary[1].select(
-            "span[class*=\"HeaderAssetSummary__colLabelRatio\"]")[0].text[1:-1]
-        zenjitsu_hi_percent = asset_summary[2].select(
-            "span[class*=\"HeaderAssetSummary__colLabelRatio\"]")[0].text[1:-1]
+        summary = shisan_page_dom.select("div[class*=\"Asset__summary\"]")[0]
+
+        fukumi_soneki = summary.select(".assets__column")[1]\
+            .select(".assets__num")[0].text
+        zenjitsu_hi = summary.select(".assets__column")[2]\
+            .select(".assets__num")[0].text
+        fukumi_soneki_percent = summary.select(".assets__column")[1]\
+            .select(".assets__percentage")[0].text
+        zenjitsu_hi_percent = summary.select(".assets__column")[2]\
+            .select(".assets__percentage")[0].text
+
         return UserShisan(fukumi_soneki, fukumi_soneki_percent, zenjitsu_hi, zenjitsu_hi_percent, subete_no_shisan)
 
 
@@ -278,8 +264,9 @@ def fetch_folio_all_theme(browser, shisan_page_dom) -> UserAllTheme:
 
 
 def fetch_folio_omakase(browser) -> Optional[Omakase]:
-    omakase_page_dom = browser.open("https://folio-sec.com/mypage/assets/omakase")
-    return Omakase.parse_theme_from_dom(omakase_page_dom.soup)
+    omakase_page_dom = browser.open(
+        "https://folio-sec.com/mypage/assets/omakase")
+    return Omakase.parse_omakase_from_dom(omakase_page_dom.soup)
 
 
 def fetch_folio_shisan(browser):
@@ -394,13 +381,13 @@ def create_payload(title, shisan):
                         "short": False
                     },
                     {
-                        "title": "含み損益 (%)",
-                        "value": f"{fukumi_soneki}（{fukumi_soneki_percent}）",
+                        "title": "テーマ 含み損益 (%)",
+                        "value": f"{fukumi_soneki} {fukumi_soneki_percent}",
                         "short": True
                     },
                     {
-                        "title": "前日比 (%)",
-                        "value": f"{comp_yesterday}（{comp_yesterday_percent}）",
+                        "title": "テーマ 前日比 (%)",
+                        "value": f"{comp_yesterday} {comp_yesterday_percent}",
                         "short": True
                     },
                 ] + utiwake,
