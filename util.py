@@ -265,7 +265,7 @@ def fetch_folio_all_theme(browser, shisan_page_dom) -> UserAllTheme:
 
 def fetch_folio_omakase(browser) -> Optional[Omakase]:
     omakase_page_dom = browser.open("https://folio-sec.com/mypage/assets/omakase")
-    return Omakase.parse_theme_from_dom(omakase_page_dom.soup)
+    return Omakase.parse_omakase_from_dom(omakase_page_dom.soup)
 
 
 def fetch_folio_shisan(browser):
