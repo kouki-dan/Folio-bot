@@ -26,4 +26,10 @@ jobs:
         if: success()
         uses: actions-hub/docker@master
         with:
-          args: push koukidan/folio-bot --all-tags
+          args: push koukidan/folio-bot:${IMAGE_TAG}
+      - name: Deploy :latest
+        if: success()
+        uses: actions-hub/docker@master
+        with:
+          args: push koukidan/folio-bot:latest
+
