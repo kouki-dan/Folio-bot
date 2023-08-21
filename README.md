@@ -1,6 +1,10 @@
 FOLIO bot
 =====
 
+## 2023/8 Archived due to sunsetting of theme investment.
+
+-----
+
 [![Build Status](https://travis-ci.org/kouki-dan/Folio-bot.svg?branch=master)](https://travis-ci.org/kouki-dan/Folio-bot)
 
 ## How to use
